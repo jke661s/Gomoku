@@ -9,7 +9,11 @@
 import Foundation
 import UIKit
 
-extension UIButton {
+class MyButton: UIButton {
+    
+    var i: Int = -999
+    var j: Int = -999
+    var coord: (Int, Int) = (-999, -999)
     
     func setPressAnimation() {
         addTarget(self, action: #selector(pressed), for: .touchDown)
