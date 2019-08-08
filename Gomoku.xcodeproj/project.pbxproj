@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		1C04B370118F9249C8C78A3C /* Pods_GomokuUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 160FF3B34B30EAEEC2B4ACF8 /* Pods_GomokuUITests.framework */; };
+		3415670322FBE8CA00B2B8CA /* UIButtonExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3415670222FBE8CA00B2B8CA /* UIButtonExtension.swift */; };
 		34BD529AA0773AC7CB4861F8 /* Pods_Gomoku.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAD5110F2CDD63F85467DC5E /* Pods_Gomoku.framework */; };
 		34D07FEC22FBD82200933C3D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D07FEB22FBD82200933C3D /* AppDelegate.swift */; };
-		34D07FEE22FBD82200933C3D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D07FED22FBD82200933C3D /* ViewController.swift */; };
 		34D07FF122FBD82200933C3D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 34D07FEF22FBD82200933C3D /* Main.storyboard */; };
 		34D07FF322FBD82300933C3D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34D07FF222FBD82300933C3D /* Assets.xcassets */; };
 		34D07FF622FBD82300933C3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 34D07FF422FBD82300933C3D /* LaunchScreen.storyboard */; };
@@ -40,9 +40,9 @@
 /* Begin PBXFileReference section */
 		0E50932597FA8D56B30E77AA /* Pods-GomokuUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GomokuUITests.debug.xcconfig"; path = "Target Support Files/Pods-GomokuUITests/Pods-GomokuUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		160FF3B34B30EAEEC2B4ACF8 /* Pods_GomokuUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GomokuUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3415670222FBE8CA00B2B8CA /* UIButtonExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIButtonExtension.swift; sourceTree = "<group>"; };
 		34D07FE822FBD82200933C3D /* Gomoku.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gomoku.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34D07FEB22FBD82200933C3D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		34D07FED22FBD82200933C3D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		34D07FF022FBD82200933C3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		34D07FF222FBD82300933C3D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		34D07FF522FBD82300933C3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -111,8 +111,15 @@
 				0E50932597FA8D56B30E77AA /* Pods-GomokuUITests.debug.xcconfig */,
 				8A036CDCF3A5BE5AC621CF8C /* Pods-GomokuUITests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		3415670122FBE8B500B2B8CA /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				3415670222FBE8CA00B2B8CA /* UIButtonExtension.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		34D07FDF22FBD82200933C3D = {
@@ -140,9 +147,9 @@
 		34D07FEA22FBD82200933C3D /* Gomoku */ = {
 			isa = PBXGroup;
 			children = (
+				3415670122FBE8B500B2B8CA /* Extensions */,
 				34D0801922FBD9C500933C3D /* ViewControllers */,
 				34D07FEB22FBD82200933C3D /* AppDelegate.swift */,
-				34D07FED22FBD82200933C3D /* ViewController.swift */,
 				34D07FEF22FBD82200933C3D /* Main.storyboard */,
 				34D07FF222FBD82300933C3D /* Assets.xcassets */,
 				34D07FF422FBD82300933C3D /* LaunchScreen.storyboard */,
@@ -407,9 +414,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				34D07FEE22FBD82200933C3D /* ViewController.swift in Sources */,
 				34D07FEC22FBD82200933C3D /* AppDelegate.swift in Sources */,
 				34D0801B22FBD9E300933C3D /* GomokuViewController.swift in Sources */,
+				3415670322FBE8CA00B2B8CA /* UIButtonExtension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
