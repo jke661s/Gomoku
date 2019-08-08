@@ -1,0 +1,6 @@
+framework module Pods_GomokuTests {
+  umbrella header "Pods-GomokuTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
