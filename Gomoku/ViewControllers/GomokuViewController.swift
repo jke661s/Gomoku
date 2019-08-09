@@ -12,42 +12,114 @@ import SocketIO
 
 class GomokuViewController: UIViewController {
 
-    let gameView = UIView()
-    struct Coord: Hashable {
+    private let gameView = UIView()
+    private let playButton = MyButton(type: .custom)
+    private var buttonList: [Coord : MyButton] = [:]
+    private var currentTurn = ""
+    
+    private struct Coord: Hashable {
         var x: Int
         var y: Int
     }
-    private var buttonList: [Coord : MyButton] = [:]
-    let manager = SocketManager(socketURL: URL(string: "http://localhost: 8900")!, config: [.log(true), .compress])
-    var socket: SocketIOClient!
-    var resetAck: SocketAckEmitter?
+    
+    private let manager = SocketManager(socketURL: URL(string: "http://192.168.0.104:8900")!, config: [.log(false), .compress])
+    private var socket: SocketIOClient!
+    private var resetAck: SocketAckEmitter?
+    private var name = ""
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
         socket = manager.defaultSocket
         addSocketHandlers()
-        socket.connect()
         setUpUI()
     }
     
     private func addSocketHandlers() {
         socket.on("playerMove") { [weak self] data, ack in
-            guard let self = self else {return}
-            guard let x = data[0] as? Int, let y = data[1] as? Int else {return}
+            guard let self = self, let name = data[0] as? String, let x = data[1] as? Int, let y = data[2] as? Int else {return}
+            guard name != self.name else {return}
             self.holdPlayerMove(coord: Coord(x: x, y: y))
+        }
+        
+        socket.on("name") { [weak self] data, ack in
+            guard let self = self,let name = data[0] as? String else {return}
+            self.name = name
+            print("My name is: ", name)
+        }
+        
+        socket.on("roomFull") { [weak self] data, ack in
+            guard let self = self else {return}
+            let alert = SystemAlert().getAlert(title: "Hey, you are too late!", message: "The room is full now. Please try again later.", actions: [UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
+                guard let self = self else {return}
+                self.socket.disconnect()
+            })])
+            self.present(alert, animated: true)
+        }
+        
+        socket.on("startGame") { [weak self] data, ack in
+            guard let self = self else {return}
+            self.enableAllButtons()
+        }
+        
+        socket.on("currentTurn"){ [weak self] data, ack in
+            guard let self = self, let turn = data[0] as? String else {return}
+            if turn == self.name {
+                self.yourTurn()
+            }
+            
         }
     }
     
     private func holdPlayerMove(coord: Coord) {
         guard let button = buttonList[coord] else {return}
+        gameView.bringSubviewToFront(button)
         button.backgroundColor = .blue
+        button.isUserInteractionEnabled = false
     }
     
     private func setUpUI() {
         self.view.backgroundColor = .white
         self.gameView.backgroundColor = .gray
         setUpButtons()
+        disableAllButtons()
         setUpLines()
+        
+        playButton.setTitle("Play", for: .normal)
+        playButton.setTitleColor(.gray, for: .normal)
+        playButton.layer.borderWidth = 1
+        playButton.layer.borderColor = UIColor.gray.cgColor
+        playButton.setPressAnimation()
+        playButton.addTarget(self, action: #selector(onPlayButton), for: .touchUpInside)
+        self.view.addSubview(playButton)
+        playButton.snp.makeConstraints { (make) in
+            make.top.equalTo(gameView.snp.bottom).offset(20)
+            make.centerX.equalToSuperview()
+            make.size.equalTo(CGSize(width: 100, height: 40))
+        }
+    }
+    
+    @objc private func onPlayButton() {
+        socket.connect()
+    }
+    
+    private func disableAllButtons() {
+        for btn in buttonList {
+            btn.value.isUserInteractionEnabled = false
+        }
+    }
+    
+    private func yourTurn() {
+        for btn in buttonList {
+            guard btn.1.backgroundColor == .red else {return}
+            btn.1.isUserInteractionEnabled = true
+        }
+    }
+    
+    private func enableAllButtons() {
+        for btn in buttonList {
+            btn.value.isUserInteractionEnabled = true
+        }
     }
     
     private func setUpButtons() {
@@ -164,9 +236,8 @@ class GomokuViewController: UIViewController {
     @objc private func onTap(btn: MyButton) {
         gameView.bringSubviewToFront(btn)
         btn.backgroundColor = .red
-        btn.isUserInteractionEnabled = false
-        print(btn.coord)
-        socket.emit
+        disableAllButtons()
+        socket.emit("playerMove", btn.coord.0, btn.coord.1)
     }
     
     

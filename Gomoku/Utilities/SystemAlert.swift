@@ -7,3 +7,16 @@
 //
 
 import Foundation
+import UIKit
+
+class SystemAlert {
+    
+    func getAlert(title: String, message: String, actions: [UIAlertAction]) -> UIAlertController {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        for action in actions {
+            alert.addAction(action)
+        }
+        return alert
+    }
+    
+}
