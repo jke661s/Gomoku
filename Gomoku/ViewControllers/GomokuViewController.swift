@@ -95,15 +95,6 @@ class GomokuViewController: UIViewController {
             }
         }
         
-        socket.on("replay") { [weak self] data, ack in
-            guard let self = self else {return}
-            let alert = SystemAlert().getAlert(title: "The game will restart.", message: "Your competitor has applied for replaying the game. It will restart now.", actions: [UIAlertAction(title: "OK", style: .default, handler: { [weak self] (action) in
-                guard let self = self else {return}
-                self.gameReset()
-            })])
-            self.present(alert, animated: true)
-        }
-        
         socket.on("replayRequest") { [weak self] data, ack in
             guard let self = self, let name = data[0] as? String, name != self.name else {return}
             let alert = SystemAlert().getAlert(title: "Agree to replay?", message: "Your competitor has applied for replaying the game. Do you agree to replay?", actions: [UIAlertAction(title: "No", style: .default, handler: { [weak self] action in
@@ -111,7 +102,7 @@ class GomokuViewController: UIViewController {
                 self.socket.emit("replayRejected", self.name)
             }),UIAlertAction(title: "Yes", style: .default, handler: { [weak self] (action) in
                 guard let self = self else {return}
-                self.socket.emit("replayApproved")
+                self.socket.emit("restart")
             })])
             self.present(alert, animated: true)
         }
@@ -122,9 +113,20 @@ class GomokuViewController: UIViewController {
             self.present(alert, animated: true)
         }
         
-        socket.on("replayApproved") { [weak self] data, ack in
+        socket.on("restart") { [weak self] data, ack in
             guard let self = self else {return}
             self.gameReset()
+        }
+        
+        socket.on("win") { [weak self] data, ack in
+            guard let self = self, let winner = data[0] as? String else {return}
+            if winner == self.name {
+                let alert = SystemAlert().getAlert(title: "Congratulations!", message: "You won the game! Try again :)", actions: [UIAlertAction(title: "OK", style: .default, handler: nil)])
+                self.present(alert, animated: true)
+            } else {
+                let alert = SystemAlert().getAlert(title: "Bad luck :(", message: "You lost the game. Try again!", actions: [UIAlertAction(title: "OK", style: .default, handler: nil)])
+                self.present(alert, animated: true)
+            }
         }
     }
     
@@ -133,9 +135,6 @@ class GomokuViewController: UIViewController {
         for btn in buttonList {
             btn.1.backgroundColor = nil
         }
-        socket.emit("quit", self.name)
-        socket.disconnect()
-        socket.connect()
     }
     
     private func holdPlayerMove(coord: Coord) {
@@ -227,23 +226,23 @@ class GomokuViewController: UIViewController {
             make.centerX.equalToSuperview()
             make.top.equalToSuperview().offset(100)
         }
-        for x in 1...15 {
+        for x in 0...14 {
             let btn = MyButton(type: .custom)
 //            btn.backgroundColor = .gray
             btn.coord.0 = x
-            btn.coord.1 = 1
+            btn.coord.1 = 0
             btn.addTarget(self, action: #selector(onTap), for: .touchUpInside)
             self.gameView.addSubview(btn)
             btn.snp.makeConstraints { (make) in
                 make.size.equalTo(CGSize(width: 15, height: 15))
             }
-            if x == 1 {
+            if x == 0 {
                 btn.snp.makeConstraints { (make) in
                     make.leading.equalToSuperview()
                     make.top.equalToSuperview()
                 }
-            } else if x == 15 {
-                let coord = Coord(x: (x - 1), y: 1)
+            } else if x == 14 {
+                let coord = Coord(x: (x - 1), y: 0)
                 guard let leftBtn = buttonList[coord] else { continue }
                 btn.snp.makeConstraints { (make) in
                     make.leading.equalTo(leftBtn.snp.trailing).offset(10)
@@ -251,7 +250,7 @@ class GomokuViewController: UIViewController {
                     make.trailing.equalToSuperview()
                 }
             } else {
-                let coord = Coord(x: (x - 1), y: 1)
+                let coord = Coord(x: (x - 1), y: 0)
                 guard let leftBtn = buttonList[coord] else { continue }
                 btn.snp.makeConstraints { (make) in
                     make.leading.equalTo(leftBtn.snp.trailing).offset(10)
@@ -261,9 +260,9 @@ class GomokuViewController: UIViewController {
             gameView.layoutIfNeeded()
             btn.layer.cornerRadius = btn.frame.size.height/2
             btn.layer.masksToBounds = true
-            let coord = Coord(x: x, y: 1)
+            let coord = Coord(x: x, y: 0)
             buttonList[coord] = btn
-            for y in 2...15 {
+            for y in 1...14 {
                 let btny = MyButton(type: .custom)
 //                btny.backgroundColor = .gray
                 btny.coord.0 = x
@@ -273,7 +272,7 @@ class GomokuViewController: UIViewController {
                 btny.snp.makeConstraints { (make) in
                     make.size.equalTo(CGSize(width: 15, height: 15))
                 }
-                if y == 15 {
+                if y == 14 {
                     let coord = Coord(x:x , y: (y - 1))
                     guard let topBtn = buttonList[coord] else { continue }
                     btny.snp.makeConstraints { (make) in
@@ -300,30 +299,30 @@ class GomokuViewController: UIViewController {
     }
     
     private func setUpLines() {
-        for j in 1...15 {
+        for j in 0...14 {
             let line = UIView()
             line.isUserInteractionEnabled = false
             line.backgroundColor = .black
             self.gameView.addSubview(line)
             line.snp.makeConstraints { (make) in
                 make.height.equalTo(1)
-                guard let button1 = buttonList[Coord(x:1,y:j)], let button2 = buttonList[Coord(x:15,y:j)] else {
-                    print("There is no buttons")
+                guard let button1 = buttonList[Coord(x:0,y:j)], let button2 = buttonList[Coord(x:14,y:j)] else {
+                    print("There are no buttons")
                     return}
                 make.leading.equalTo(button1.snp.centerX)
                 make.trailing.equalTo(button2.snp.centerX)
                 make.centerY.equalTo(button1)
             }
         }
-        for i in 1...15 {
+        for i in 0...14 {
             let line = UIView()
             line.isUserInteractionEnabled = false
             line.backgroundColor = .black
             self.gameView.addSubview(line)
             line.snp.makeConstraints { (make) in
                 make.width.equalTo(1)
-                guard let button1 = buttonList[Coord(x:i,y:1)], let button2 = buttonList[Coord(x:i,y:15)] else {
-                    print("There is no buttons")
+                guard let button1 = buttonList[Coord(x:i,y:0)], let button2 = buttonList[Coord(x:i,y:14)] else {
+                    print("There are no buttons")
                     return}
                 make.top.equalTo(button1.snp.centerY)
                 make.bottom.equalTo(button2.snp.centerY)
