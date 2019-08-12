@@ -16,6 +16,10 @@ class GomokuViewController: UIViewController {
     private let playButton = MyButton(type: .custom)
     private var buttonList: [Coord : MyButton] = [:]
     private var currentTurn = ""
+    private let userInfoLabel = UILabel()
+    private var myColor = UIColor() 
+    private var otherPartyColor = UIColor()
+    private let statusLabel = UILabel()
     
     private struct Coord: Hashable {
         var x: Int
@@ -25,7 +29,22 @@ class GomokuViewController: UIViewController {
     private let manager = SocketManager(socketURL: URL(string: "http://192.168.0.104:8900")!, config: [.log(false), .compress])
     private var socket: SocketIOClient!
     private var resetAck: SocketAckEmitter?
-    private var name = ""
+    private var name = "" {
+        didSet {
+            switch self.name {
+            case "X":
+                myColor = .black
+                self.userInfoLabel.text = "You are playing black"
+                otherPartyColor = .white
+            case "O":
+                myColor = .white
+                self.userInfoLabel.text = "You are playing white"
+                otherPartyColor = .black
+            default:
+                return
+            }
+        }
+    }
     
 
     override func viewDidLoad() {
@@ -33,6 +52,7 @@ class GomokuViewController: UIViewController {
         socket = manager.defaultSocket
         addSocketHandlers()
         setUpUI()
+        setListener()
     }
     
     private func addSocketHandlers() {
@@ -45,7 +65,7 @@ class GomokuViewController: UIViewController {
         socket.on("name") { [weak self] data, ack in
             guard let self = self,let name = data[0] as? String else {return}
             self.name = name
-            print("My name is: ", name)
+            self.statusLabel.text = "Waiting for another player coming..."
         }
         
         socket.on("roomFull") { [weak self] data, ack in
@@ -59,31 +79,97 @@ class GomokuViewController: UIViewController {
         
         socket.on("startGame") { [weak self] data, ack in
             guard let self = self else {return}
-            self.enableAllButtons()
+            self.userInfoLabel.isHidden = false
+            self.playButton.setTitle("Replay", for: .normal)
+            self.playButton.removeTarget(nil, action: nil, for: .touchUpInside)
+            self.playButton.addTarget(self, action: #selector(self.onReplay), for: .touchUpInside)
         }
         
-        socket.on("currentTurn"){ [weak self] data, ack in
+        socket.on("currentTurn") { [weak self] data, ack in
             guard let self = self, let turn = data[0] as? String else {return}
             if turn == self.name {
                 self.yourTurn()
+                self.statusLabel.text = "It's your turn now."
+            } else {
+                self.statusLabel.text = "It's NOT your turn!"
             }
-            
         }
+        
+        socket.on("replay") { [weak self] data, ack in
+            guard let self = self else {return}
+            let alert = SystemAlert().getAlert(title: "The game will restart.", message: "Your competitor has applied for replaying the game. It will restart now.", actions: [UIAlertAction(title: "OK", style: .default, handler: { [weak self] (action) in
+                guard let self = self else {return}
+                self.gameReset()
+            })])
+            self.present(alert, animated: true)
+        }
+        
+        socket.on("replayRequest") { [weak self] data, ack in
+            guard let self = self, let name = data[0] as? String, name != self.name else {return}
+            let alert = SystemAlert().getAlert(title: "Agree to replay?", message: "Your competitor has applied for replaying the game. Do you agree to replay?", actions: [UIAlertAction(title: "No", style: .default, handler: { [weak self] action in
+                guard let self = self else {return}
+                self.socket.emit("replayRejected", self.name)
+            }),UIAlertAction(title: "Yes", style: .default, handler: { [weak self] (action) in
+                guard let self = self else {return}
+                self.socket.emit("replayApproved")
+            })])
+            self.present(alert, animated: true)
+        }
+        
+        socket.on("replayRejected") { [weak self] data, ack in
+            guard let self = self, let name = data[0] as? String, name != self.name else {return}
+            let alert = SystemAlert().getAlert(title: "Bad luck", message: "Your replay request has been rejected", actions: [UIAlertAction(title: "OK", style: .default, handler: nil)])
+            self.present(alert, animated: true)
+        }
+        
+        socket.on("replayApproved") { [weak self] data, ack in
+            guard let self = self else {return}
+            self.gameReset()
+        }
+    }
+    
+    private func gameReset() {
+        disableAllButtons()
+        for btn in buttonList {
+            btn.1.backgroundColor = nil
+        }
+        socket.emit("quit", self.name)
+        socket.disconnect()
+        socket.connect()
     }
     
     private func holdPlayerMove(coord: Coord) {
         guard let button = buttonList[coord] else {return}
         gameView.bringSubviewToFront(button)
-        button.backgroundColor = .blue
+        button.backgroundColor = otherPartyColor
         button.isUserInteractionEnabled = false
+    }
+    
+    private func setListener() {
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationWillTerminate(notification:)), name: UIApplication.willTerminateNotification, object: nil)
+    }
+    
+    @objc func applicationWillTerminate(notification: Notification) {
+        socket.emit("quit", self.name)
+        socket.disconnect()
     }
     
     private func setUpUI() {
         self.view.backgroundColor = .white
-        self.gameView.backgroundColor = .gray
+        self.gameView.backgroundColor = goBoardColor
         setUpButtons()
         disableAllButtons()
         setUpLines()
+        
+        self.view.addSubview(statusLabel)
+        statusLabel.snp.makeConstraints { (make) in
+            make.height.equalTo(100)
+            make.centerX.equalToSuperview()
+            make.top.equalToSuperview().offset(25)
+        }
+        statusLabel.text = ""
+        statusLabel.textColor = .black
+        
         
         playButton.setTitle("Play", for: .normal)
         playButton.setTitleColor(.gray, for: .normal)
@@ -97,10 +183,23 @@ class GomokuViewController: UIViewController {
             make.centerX.equalToSuperview()
             make.size.equalTo(CGSize(width: 100, height: 40))
         }
+        
+        self.view.addSubview(userInfoLabel)
+        userInfoLabel.snp.makeConstraints { (make) in
+            make.height.equalTo(50)
+            make.centerX.equalToSuperview()
+            make.top.equalTo(playButton.snp.bottom).offset(10)
+        }
+        userInfoLabel.isHidden = true
+        userInfoLabel.textColor = .gray
     }
     
     @objc private func onPlayButton() {
         socket.connect()
+    }
+    
+    @objc private func onReplay() {
+        socket.emit("replayRequest", self.name)
     }
     
     private func disableAllButtons() {
@@ -111,7 +210,7 @@ class GomokuViewController: UIViewController {
     
     private func yourTurn() {
         for btn in buttonList {
-            guard btn.1.backgroundColor == .red else {return}
+            guard btn.1.backgroundColor == nil else {continue}
             btn.1.isUserInteractionEnabled = true
         }
     }
@@ -207,7 +306,7 @@ class GomokuViewController: UIViewController {
             line.backgroundColor = .black
             self.gameView.addSubview(line)
             line.snp.makeConstraints { (make) in
-                make.height.equalTo(2)
+                make.height.equalTo(1)
                 guard let button1 = buttonList[Coord(x:1,y:j)], let button2 = buttonList[Coord(x:15,y:j)] else {
                     print("There is no buttons")
                     return}
@@ -222,7 +321,7 @@ class GomokuViewController: UIViewController {
             line.backgroundColor = .black
             self.gameView.addSubview(line)
             line.snp.makeConstraints { (make) in
-                make.width.equalTo(2)
+                make.width.equalTo(1)
                 guard let button1 = buttonList[Coord(x:i,y:1)], let button2 = buttonList[Coord(x:i,y:15)] else {
                     print("There is no buttons")
                     return}
@@ -235,7 +334,7 @@ class GomokuViewController: UIViewController {
     
     @objc private func onTap(btn: MyButton) {
         gameView.bringSubviewToFront(btn)
-        btn.backgroundColor = .red
+        btn.backgroundColor = myColor
         disableAllButtons()
         socket.emit("playerMove", btn.coord.0, btn.coord.1)
     }

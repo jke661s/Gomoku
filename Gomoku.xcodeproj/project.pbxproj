@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1C04B370118F9249C8C78A3C /* Pods_GomokuUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 160FF3B34B30EAEEC2B4ACF8 /* Pods_GomokuUITests.framework */; };
 		3415670322FBE8CA00B2B8CA /* UIButtonExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3415670222FBE8CA00B2B8CA /* UIButtonExtension.swift */; };
+		3477C8822300EE75008EF63A /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3477C8812300EE75008EF63A /* Colors.swift */; };
 		347D12FC22FD2D44003CDCA3 /* SystemAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347D12FB22FD2D44003CDCA3 /* SystemAlert.swift */; };
 		34BD529AA0773AC7CB4861F8 /* Pods_Gomoku.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAD5110F2CDD63F85467DC5E /* Pods_Gomoku.framework */; };
 		34D07FEC22FBD82200933C3D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D07FEB22FBD82200933C3D /* AppDelegate.swift */; };
@@ -42,6 +43,7 @@
 		0E50932597FA8D56B30E77AA /* Pods-GomokuUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GomokuUITests.debug.xcconfig"; path = "Target Support Files/Pods-GomokuUITests/Pods-GomokuUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		160FF3B34B30EAEEC2B4ACF8 /* Pods_GomokuUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GomokuUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3415670222FBE8CA00B2B8CA /* UIButtonExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIButtonExtension.swift; sourceTree = "<group>"; };
+		3477C8812300EE75008EF63A /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		347D12FB22FD2D44003CDCA3 /* SystemAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAlert.swift; sourceTree = "<group>"; };
 		34D07FE822FBD82200933C3D /* Gomoku.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gomoku.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34D07FEB22FBD82200933C3D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -128,6 +130,7 @@
 			isa = PBXGroup;
 			children = (
 				347D12FB22FD2D44003CDCA3 /* SystemAlert.swift */,
+				3477C8812300EE75008EF63A /* Colors.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -426,6 +429,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				34D07FEC22FBD82200933C3D /* AppDelegate.swift in Sources */,
+				3477C8822300EE75008EF63A /* Colors.swift in Sources */,
 				347D12FC22FD2D44003CDCA3 /* SystemAlert.swift in Sources */,
 				34D0801B22FBD9E300933C3D /* GomokuViewController.swift in Sources */,
 				3415670322FBE8CA00B2B8CA /* UIButtonExtension.swift in Sources */,
